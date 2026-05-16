@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Backend API metrics
+  - job_name: 'novaryn-backend'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Frontend metrics (if available)
+  - job_name: 'novaryn-frontend'
+    static_configs:
+      - targets: ['frontend:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # PostgreSQL metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis metrics (if used)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Nginx metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+
+  # Docker metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-exporter:9323']
+
+  # Custom application metrics
+  - job_name: 'novaryn-app'
+    static_configs:
+      - targets: ['app-exporter:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+# Alerting rules
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Example alert rules (to be placed in separate files)
+# groups:
+# - name: example
+#   rules:
+#   - alert: HighErrorRate
+#     expr: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
+#     for: 10m
+#     labels:
+#       severity: page
+#     annotations:
+#       summary: High request latency

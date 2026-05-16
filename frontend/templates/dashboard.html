@@ -1,0 +1,120 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">News Dashboard</h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Articles</h5>
+                <h2 id="total-articles" class="mb-0">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Positive</h5>
+                <h2 id="positive-count" class="mb-0">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Negative</h5>
+                <h2 id="negative-count" class="mb-0">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Neutral</h5>
+                <h2 id="neutral-count" class="mb-0">0</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Latest News -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Latest News</h5>
+            </div>
+            <div class="card-body">
+                <div id="news-container">
+                    <!-- News articles will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Sentiment Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="sentiment-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load dashboard data
+async function loadDashboardData() {
+    try {
+        const response = await fetch('/api/analytics/dashboard');
+        const data = await response.json();
+        
+        // Update stats
+        document.getElementById('total-articles').textContent = data.total_articles || 0;
+        document.getElementById('positive-count').textContent = data.sentiment_distribution.positive || 0;
+        document.getElementById('negative-count').textContent = data.sentiment_distribution.negative || 0;
+        document.getElementById('neutral-count').textContent = data.sentiment_distribution.neutral || 0;
+        
+        // Create sentiment chart
+        createSentimentChart(data.sentiment_distribution);
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+function createSentimentChart(data) {
+    const ctx = document.getElementById('sentiment-chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Negative', 'Neutral'],
+            datasets: [{
+                data: [data.positive, data.negative, data.neutral],
+                backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', loadDashboardData);
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+env/
+
+# Environment variables
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Data
+data/raw/
+data/processed/
+data/embeddings/
+
+# ML Models
+ml_pipeline/models/
+ml_pipeline/artifacts/
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db

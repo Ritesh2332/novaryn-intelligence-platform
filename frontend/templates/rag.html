@@ -1,0 +1,116 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">AI Q&A System</h1>
+        <p class="lead">Ask questions about news and get AI-powered answers with relevant sources.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <form id="qa-form">
+                    <div class="mb-3">
+                        <label for="question" class="form-label">Your Question</label>
+                        <textarea class="form-control" id="question" rows="3" 
+                                  placeholder="What's happening around Nvidia this week?" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="k" class="form-label">Number of Sources</label>
+                        <select class="form-select" id="k">
+                            <option value="3">3 sources</option>
+                            <option value="5" selected>5 sources</option>
+                            <option value="10">10 sources</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Ask AI
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">AI Answer</h5>
+                </div>
+                <div class="card-body">
+                    <div id="answer" class="mb-3"></div>
+                    
+                    <h6>Sources:</h6>
+                    <div id="sources" class="list-group">
+                        <!-- Sources will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Thinking...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('qa-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const question = document.getElementById('question').value;
+    const k = parseInt(document.getElementById('k').value);
+    
+    // Show loading
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/rag/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question, k })
+        });
+        
+        const data = await response.json();
+        
+        // Hide loading
+        document.getElementById('loading').style.display = 'none';
+        
+        // Show results
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('answer').innerHTML = `<p><strong>Answer:</strong> ${data.answer}</p>`;
+        
+        // Display sources
+        const sourcesContainer = document.getElementById('sources');
+        sourcesContainer.innerHTML = '';
+        
+        data.sources.forEach(source => {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'list-group-item';
+            sourceItem.innerHTML = `
+                <h6>${source.title}</h6>
+                <p>${source.snippet}</p>
+                <a href="${source.url}" target="_blank" class="btn btn-sm btn-outline-primary">Read More</a>
+            `;
+            sourcesContainer.appendChild(sourceItem);
+        });
+        
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loading').style.display = 'none';
+        alert('Error getting answer. Please try again.');
+    }
+});
+</script>
+{% endblock %}
