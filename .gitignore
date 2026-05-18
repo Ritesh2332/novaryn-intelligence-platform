@@ -4,18 +4,20 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual env
+# Virtual Environments
 venv/
 env/
+.venv/
 
-# Environment variables
+# Environment Variables
 .env
 
 # Jupyter
 .ipynb_checkpoints/
 
-# VS Code
+# IDE
 .vscode/
+.idea/
 
 # Logs
 logs/
@@ -30,9 +32,22 @@ data/embeddings/
 ml_pipeline/models/
 ml_pipeline/artifacts/
 
+# ChromaDB
+chromadb/
+
+# Node Modules
+node_modules/
+
+# Build Files
+dist/
+build/
+
+# Database Files
+*.db
+
 # Docker
 *.tar
 
-# OS
+# OS Files
 .DS_Store
 Thumbs.db

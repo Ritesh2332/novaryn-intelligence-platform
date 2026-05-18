@@ -1,120 +1,268 @@
-{% extends "index.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novaryn AI // Terminal</title>
 
-{% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">News Dashboard</h1>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Our CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+  <!-- ── SIDEBAR ─────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <h1 class="logo">
+      <span class="logo-bracket">[</span>
+      <span class="logo-text">NOVARYN</span>
+      <span class="logo-bracket">]</span>
+      <span class="logo-cursor"></span>
+    </h1>
+
+    <ul class="nav-links">
+      <li class="nav-item active" onclick="showSection('dashboard-section', this)">
+        <i class="fas fa-chart-line"></i>
+        <span>Dashboard</span>
+      </li>
+      <li class="nav-item" onclick="showSection('analytics-section', this)">
+        <i class="fas fa-brain"></i>
+        <span>AI Analytics</span>
+      </li>
+      <li class="nav-item" onclick="showSection('news-section', this); loadNewsFeed()">
+        <i class="fas fa-newspaper"></i>
+        <span>News Feed</span>
+      </li>
+      <li class="nav-item" onclick="showSection('assistant-section', this)">
+        <i class="fas fa-robot"></i>
+        <span>AI Assistant</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-status">
+        <span class="status-dot"></span>
+        <span>LIVE FEED ACTIVE</span>
+      </div>
     </div>
+
+  </aside>
+
+  <!-- ── MAIN ────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ══ DASHBOARD SECTION ══════════════════════════ -->
+    <div id="dashboard-section" class="content-section active-section">
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>AI News <span>Intelligence</span> Platform</h1>
+          <p class="subtitle">real-time news analysis and AI-powered insights</p>
+        </div>
+        <div class="topbar-right">
+          <button class="refresh-btn" onclick="fetchNews()">
+            <i class="fas fa-sync-alt"></i>
+            <span>REFRESH</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div class="stat-content">
+            <h3>Total Articles</h3>
+            <h2 id="totalArticles">—</h2>
+            <div class="stat-change positive-change">
+              <i class="fas fa-circle"></i>
+              <span>LIVE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card positive">
+          <div class="stat-content">
+            <h3>Positive</h3>
+            <h2 id="positiveCount">—</h2>
+            <div class="stat-change positive-change">
+              <i class="fas fa-arrow-up"></i>
+              <span>OPTIMISTIC</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card negative">
+          <div class="stat-content">
+            <h3>Negative</h3>
+            <h2 id="negativeCount">—</h2>
+            <div class="stat-change negative-change">
+              <i class="fas fa-arrow-down"></i>
+              <span>CRITICAL</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card neutral">
+          <div class="stat-content">
+            <h3>Neutral</h3>
+            <h2 id="neutralCount">—</h2>
+            <div class="stat-change neutral-change">
+              <i class="fas fa-minus"></i>
+              <span>BALANCED</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+
+        <div class="chart-card">
+          <h3>Sentiment Distribution</h3>
+          <canvas id="sentimentChart" height="200"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Top Sources</h3>
+          <canvas id="sourceChart" height="200"></canvas>
+        </div>
+
+      </div>
+
+      <!-- AI Ask -->
+      <div class="ai-section">
+        <h2>Ask AI About Current News</h2>
+        <div class="ai-input-group">
+          <div class="ai-input-wrapper">
+            <input
+              type="text"
+              id="aiQuestion"
+              placeholder="query current news trends..."
+              onkeydown="if(event.key==='Enter') askAIDashboard()"
+            >
+          </div>
+          <button onclick="askAIDashboard()">EXECUTE</button>
+        </div>
+        <div class="ai-response" id="aiResponse">
+          AI response will appear here...
+        </div>
+      </div>
+
+      <!-- News Grid -->
+      <div>
+        <div class="news-section-header">Latest Articles</div>
+        <div class="news-grid" id="newsGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- ══ ANALYTICS SECTION ══════════════════════════ -->
+    <div id="analytics-section" class="content-section analytics-fullpage">
+      <h2>Advanced Analytics</h2>
+
+      <!-- top stat strip -->
+      <div class="analytics-stat-strip" id="analytics-stats-strip">
+        <div class="a-stat">
+          <span class="a-stat-label">// total</span>
+          <span class="a-stat-val" id="a-total">—</span>
+        </div>
+        <div class="a-stat positive">
+          <span class="a-stat-label">// positive</span>
+          <span class="a-stat-val" id="a-pos">—</span>
+        </div>
+        <div class="a-stat negative">
+          <span class="a-stat-label">// negative</span>
+          <span class="a-stat-val" id="a-neg">—</span>
+        </div>
+        <div class="a-stat neutral">
+          <span class="a-stat-label">// neutral</span>
+          <span class="a-stat-val" id="a-neu">—</span>
+        </div>
+      </div>
+
+      <!-- chart row -->
+      <div class="analytics-chart-row">
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>Sentiment Distribution
+          </div>
+          <div class="chart-wrap">
+            <canvas id="analyticsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="analytics-panel analytics-panel-narrow">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>Breakdown
+          </div>
+          <div class="analytics-breakdown" id="analytics-breakdown">
+            <div class="breakdown-row">
+              <span class="bd-label positive-text">POSITIVE</span>
+              <div class="bd-bar-track"><div class="bd-bar" id="bd-pos-bar" style="background:var(--green);width:0%"></div></div>
+              <span class="bd-pct" id="bd-pos-pct">0%</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="bd-label negative-text">NEGATIVE</span>
+              <div class="bd-bar-track"><div class="bd-bar" id="bd-neg-bar" style="background:var(--red);width:0%"></div></div>
+              <span class="bd-pct" id="bd-neg-pct">0%</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="bd-label neutral-text">NEUTRAL</span>
+              <div class="bd-bar-track"><div class="bd-bar" id="bd-neu-bar" style="background:var(--amber);width:0%"></div></div>
+              <span class="bd-pct" id="bd-neu-pct">0%</span>
+            </div>
+
+            <div class="analytics-log" id="analytics-log">
+              <div class="log-line"><span class="log-time">00:00:00</span><span class="log-msg">// awaiting data feed...</span></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ NEWS FEED SECTION ══════════════════════════ -->
+    <div id="news-section" class="content-section">
+      <h2>Latest News Feed</h2>
+      <div id="news-feed-container"></div>
+    </div>
+
+    <!-- ══ ASSISTANT SECTION ══════════════════════════ -->
+    <div id="assistant-section" class="content-section">
+      <h2>AI News Assistant</h2>
+      <div class="assistant-box">
+        <input
+          type="text"
+          id="assistant-query"
+          placeholder="> enter your query..."
+          onkeydown="if(event.key==='Enter') askAI()"
+        >
+        <button onclick="askAI()">EXECUTE</button>
+        <div id="assistant-response" style="display:none"></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
-<!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Articles</h5>
-                <h2 id="total-articles" class="mb-0">0</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">Positive</h5>
-                <h2 id="positive-count" class="mb-0">0</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-danger text-white">
-            <div class="card-body">
-                <h5 class="card-title">Negative</h5>
-                <h2 id="negative-count" class="mb-0">0</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">Neutral</h5>
-                <h2 id="neutral-count" class="mb-0">0</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Latest News -->
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Latest News</h5>
-            </div>
-            <div class="card-body">
-                <div id="news-container">
-                    <!-- News articles will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Sentiment Distribution</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="sentiment-chart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-// Load dashboard data
-async function loadDashboardData() {
-    try {
-        const response = await fetch('/api/analytics/dashboard');
-        const data = await response.json();
-        
-        // Update stats
-        document.getElementById('total-articles').textContent = data.total_articles || 0;
-        document.getElementById('positive-count').textContent = data.sentiment_distribution.positive || 0;
-        document.getElementById('negative-count').textContent = data.sentiment_distribution.negative || 0;
-        document.getElementById('neutral-count').textContent = data.sentiment_distribution.neutral || 0;
-        
-        // Create sentiment chart
-        createSentimentChart(data.sentiment_distribution);
-        
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
-    }
-}
-
-function createSentimentChart(data) {
-    const ctx = document.getElementById('sentiment-chart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Positive', 'Negative', 'Neutral'],
-            datasets: [{
-                data: [data.positive, data.negative, data.neutral],
-                backgroundColor: ['#28a745', '#dc3545', '#ffc107']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-}
-
-// Load data on page load
-document.addEventListener('DOMContentLoaded', loadDashboardData);
-</script>
-{% endblock %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
