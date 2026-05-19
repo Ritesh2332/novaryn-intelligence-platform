@@ -95,18 +95,22 @@ def latest_articles():
 
     try:
 
-        articles = (
-
-            db.query(NewsArticle)
-
-            .order_by(
-                NewsArticle.id.desc()
+        # Deduplicate: get the latest article per unique URL
+        subq = (
+            db.query(
+                NewsArticle.url,
+                func.max(NewsArticle.id).label("max_id")
             )
+            .group_by(NewsArticle.url)
+            .subquery()
+        )
 
+        articles = (
+            db.query(NewsArticle)
+            .join(subq, NewsArticle.id == subq.c.max_id)
+            .order_by(NewsArticle.id.desc())
             .limit(10)
-
             .all()
-
         )
 
         return [

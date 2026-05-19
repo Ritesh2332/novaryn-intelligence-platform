@@ -1,3 +1,4 @@
+from backend.app.services.gnews_service import fetch_gnews
 from newsapi import NewsApiClient
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
@@ -17,12 +18,16 @@ newsapi = NewsApiClient(
 
 def fetch_and_store_news(db: Session):
 
-    articles = newsapi.get_top_headlines(
+    newsapi_articles = newsapi.get_top_headlines(
         language="en",
         page_size=10
-    )
+    )["articles"]
 
-    for article in articles["articles"]:
+    gnews_articles = fetch_gnews()
+
+    all_articles = newsapi_articles + gnews_articles
+
+    for article in all_articles:    
 
         existing_article = db.query(NewsArticle).filter(
             NewsArticle.url == article.get("url")
@@ -31,7 +36,14 @@ def fetch_and_store_news(db: Session):
         if existing_article:
             continue
 
-        raw_content = article.get("content")
+        raw_content = (
+            article.get("content")
+            or article.get("description")
+            or ""
+        )
+
+        if not raw_content:
+            continue
 
         processed_text = preprocess_text(raw_content)
 
@@ -41,10 +53,18 @@ def fetch_and_store_news(db: Session):
 
         news = NewsArticle(
             title=article.get("title"),
-            source=article["source"]["name"],
+            source=(
+                article["source"]["name"]
+                if isinstance(article["source"], dict)
+                else article["source"]
+            ),
             author=article.get("author"),
             description=article.get("description"),
-            content=raw_content,
+            content=(
+                article.get("content")
+                or article.get("description")
+                or ""
+            ),
             url=article.get("url"),
             published_at=article.get("publishedAt"),
             sentiment=sentiment_result["label"],

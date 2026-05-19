@@ -174,69 +174,115 @@
 
     <!-- ══ ANALYTICS SECTION ══════════════════════════ -->
     <div id="analytics-section" class="content-section analytics-fullpage">
-      <h2>Advanced Analytics</h2>
 
-      <!-- top stat strip -->
-      <div class="analytics-stat-strip" id="analytics-stats-strip">
-        <div class="a-stat">
-          <span class="a-stat-label">// total</span>
-          <span class="a-stat-val" id="a-total">—</span>
-        </div>
-        <div class="a-stat positive">
-          <span class="a-stat-label">// positive</span>
-          <span class="a-stat-val" id="a-pos">—</span>
-        </div>
-        <div class="a-stat negative">
-          <span class="a-stat-label">// negative</span>
-          <span class="a-stat-val" id="a-neg">—</span>
-        </div>
-        <div class="a-stat neutral">
-          <span class="a-stat-label">// neutral</span>
-          <span class="a-stat-val" id="a-neu">—</span>
+      <!-- header with live badge -->
+      <div class="analytics-header">
+        <h2>Advanced Analytics</h2>
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          <span>LIVE</span>
+          <span class="live-fps" id="live-fps">60 FPS</span>
         </div>
       </div>
 
-      <!-- chart row -->
+      <!-- real-time metric strip with sparklines -->
+      <div class="analytics-stat-strip" id="analytics-stats-strip">
+        <div class="a-stat">
+          <span class="a-stat-label">// total_articles</span>
+          <span class="a-stat-val" id="a-total">—</span>
+          <canvas class="sparkline" id="spark-total" width="120" height="30"></canvas>
+        </div>
+        <div class="a-stat positive">
+          <span class="a-stat-label">// positive_sentiment</span>
+          <span class="a-stat-val" id="a-pos">—</span>
+          <canvas class="sparkline" id="spark-pos" width="120" height="30"></canvas>
+        </div>
+        <div class="a-stat negative">
+          <span class="a-stat-label">// negative_sentiment</span>
+          <span class="a-stat-val" id="a-neg">—</span>
+          <canvas class="sparkline" id="spark-neg" width="120" height="30"></canvas>
+        </div>
+        <div class="a-stat neutral">
+          <span class="a-stat-label">// neutral_sentiment</span>
+          <span class="a-stat-val" id="a-neu">—</span>
+          <canvas class="sparkline" id="spark-neu" width="120" height="30"></canvas>
+        </div>
+      </div>
+
+      <!-- row 1: sentiment trends + source radar -->
       <div class="analytics-chart-row">
+
+        <div class="analytics-panel analytics-panel-wide">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>Sentiment Trends Over Time
+            <span class="panel-badge">REAL-TIME</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
 
         <div class="analytics-panel">
           <div class="analytics-panel-header">
-            <span class="panel-dot"></span>Sentiment Distribution
+            <span class="panel-dot"></span>Source Comparison
           </div>
           <div class="chart-wrap">
-            <canvas id="analyticsChart"></canvas>
+            <canvas id="sourceRadarChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- row 2: word freq + entity extraction + terminal log -->
+      <div class="analytics-bottom-row">
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>Word Frequency Analysis
+          </div>
+          <div class="word-freq-container" id="word-freq">
+            <div class="freq-tag" style="--freq-size:1.4rem;--freq-color:var(--green)">market</div>
+            <div class="freq-tag" style="--freq-size:1.1rem;--freq-color:var(--blue)">tech</div>
+            <div class="freq-tag" style="--freq-size:1.0rem;--freq-color:var(--amber)">global</div>
+            <div class="freq-tag" style="--freq-size:0.9rem;--freq-color:var(--muted)">trade</div>
+            <div class="freq-tag" style="--freq-size:0.85rem;--freq-color:var(--red)">crisis</div>
+            <div class="freq-tag" style="--freq-size:0.8rem;--freq-color:var(--green)">growth</div>
+            <div class="freq-tag" style="--freq-size:0.75rem;--freq-color:var(--blue)">policy</div>
+            <div class="freq-tag" style="--freq-size:0.7rem;--freq-color:var(--muted)">energy</div>
+          </div>
+        </div>
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>Entity Extraction
+          </div>
+          <div class="entity-list" id="entity-list">
+            <div class="entity-row"><span class="entity-type org">ORG</span><span class="entity-name">Wall Street Journal</span><span class="entity-count">12</span></div>
+            <div class="entity-row"><span class="entity-type per">PER</span><span class="entity-name">Federal Reserve</span><span class="entity-count">8</span></div>
+            <div class="entity-row"><span class="entity-type loc">LOC</span><span class="entity-name">United States</span><span class="entity-count">6</span></div>
+            <div class="entity-row"><span class="entity-type org">ORG</span><span class="entity-name">CBS News</span><span class="entity-count">5</span></div>
+            <div class="entity-row"><span class="entity-type org">ORG</span><span class="entity-name">Politico</span><span class="entity-count">4</span></div>
           </div>
         </div>
 
         <div class="analytics-panel analytics-panel-narrow">
           <div class="analytics-panel-header">
-            <span class="panel-dot"></span>Breakdown
+            <span class="panel-dot"></span>Processing Log
+            <span class="log-count" id="log-count">0 events</span>
           </div>
-          <div class="analytics-breakdown" id="analytics-breakdown">
-            <div class="breakdown-row">
-              <span class="bd-label positive-text">POSITIVE</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-pos-bar" style="background:var(--green);width:0%"></div></div>
-              <span class="bd-pct" id="bd-pos-pct">0%</span>
-            </div>
-            <div class="breakdown-row">
-              <span class="bd-label negative-text">NEGATIVE</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-neg-bar" style="background:var(--red);width:0%"></div></div>
-              <span class="bd-pct" id="bd-neg-pct">0%</span>
-            </div>
-            <div class="breakdown-row">
-              <span class="bd-label neutral-text">NEUTRAL</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-neu-bar" style="background:var(--amber);width:0%"></div></div>
-              <span class="bd-pct" id="bd-neu-pct">0%</span>
-            </div>
-
-            <div class="analytics-log" id="analytics-log">
-              <div class="log-line"><span class="log-time">00:00:00</span><span class="log-msg">// awaiting data feed...</span></div>
-            </div>
-
+          <div class="analytics-log" id="analytics-log">
+            <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg">// system initialized</span></div>
           </div>
         </div>
 
       </div>
+
+      <!-- live ticker -->
+      <div class="analytics-ticker" id="analytics-ticker">
+        <span class="ticker-label">// LIVE_FEED ></span>
+        <div class="ticker-items" id="ticker-items"></div>
+      </div>
+
     </div>
 
     <!-- ══ NEWS FEED SECTION ══════════════════════════ -->

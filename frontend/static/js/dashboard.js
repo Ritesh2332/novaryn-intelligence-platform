@@ -17,7 +17,7 @@ const CHART_DEFAULTS = {
     family: "'JetBrains Mono', monospace",
     size: 10,
   },
-  color: "#4a4a4a",
+  color: "#8a8a8a",
 };
 
 Chart.defaults.font.family  = CHART_DEFAULTS.font.family;
@@ -85,6 +85,13 @@ function showSection(sectionId, clickedEl) {
     i.classList.remove("active")
   );
   if (clickedEl) clickedEl.classList.add("active");
+
+  // start/stop real-time analytics loop
+  if (sectionId === "analytics-section") {
+    startAnalyticsRealtime();
+  } else {
+    stopAnalyticsRealtime();
+  }
 }
 
 /* ── Analytics fetch (dashboard data) ───────────────────────── */
@@ -111,6 +118,8 @@ async function fetchAnalytics() {
     renderSentimentChart(sentData);
     renderSourceChart(sourceData);
     renderAnalyticsChart(sentData);
+    renderTrendChart(sentData);
+    renderSourceRadarChart(sourceData);
     renderNews(latArticles);
 
   } catch (err) {
@@ -199,7 +208,7 @@ function renderSentimentChart(data) {
           backgroundColor: "#0e0e0e",
           borderColor: "#242424",
           borderWidth: 1,
-          titleColor: "#4a4a4a",
+          titleColor: "#8a8a8a",
           bodyColor: "#e4e4e4",
           padding: 10,
           callbacks: {
@@ -210,7 +219,7 @@ function renderSentimentChart(data) {
       scales: {
         x: {
           grid: { color: COLORS.grid },
-          ticks: { color: "#4a4a4a" },
+          ticks: { color: "#8a8a8a" },
           border: { color: "#1c1c1c" },
         },
         y: {
@@ -218,7 +227,7 @@ function renderSentimentChart(data) {
           ticks: {
             color: (ctx) => {
               const map = ["#00ff88", "#ff3c3c", "#ffaa00"];
-              return map[ctx.index] || "#4a4a4a";
+              return map[ctx.index] || "#8a8a8a";
             },
           },
           border: { color: "#1c1c1c" },
@@ -265,7 +274,7 @@ function renderSourceChart(data) {
           backgroundColor: "#0e0e0e",
           borderColor: "#242424",
           borderWidth: 1,
-          titleColor: "#4a4a4a",
+          titleColor: "#8a8a8a",
           bodyColor: "#e4e4e4",
           padding: 10,
           callbacks: {
@@ -277,7 +286,7 @@ function renderSourceChart(data) {
         x: {
           grid: { display: false },
           ticks: {
-            color: "#4a4a4a",
+            color: "#8a8a8a",
             maxRotation: 30,
             minRotation: 0,
           },
@@ -285,7 +294,7 @@ function renderSourceChart(data) {
         },
         y: {
           grid: { color: COLORS.grid },
-          ticks: { color: "#4a4a4a" },
+          ticks: { color: "#8a8a8a" },
           border: { color: "#1c1c1c" },
         },
       },
@@ -293,17 +302,16 @@ function renderSourceChart(data) {
   });
 }
 
-/* ── Analytics page chart + breakdown + log ──────────── */
-function renderAnalyticsChart(data) {
-  const ctx = document.getElementById("analyticsChart");
-  if (!ctx) return;
+/* ── Analytics page: stats + sparklines + trend + radar ─────── */
+let trendChart = null;
+let sourceRadarChart = null;
+let analyticsSparkData = { total: [], pos: [], neg: [], neu: [] };
 
+function renderAnalyticsChart(data) {
   // populate stat strip
   let total = 0, pos = 0, neg = 0, neu = 0;
-  const map = {};
   data.forEach(d => {
     const s = (d.sentiment || "").toLowerCase();
-    map[s] = d.count;
     total += d.count;
     if (s === "positive") pos = d.count;
     else if (s === "negative") neg = d.count;
@@ -316,25 +324,25 @@ function renderAnalyticsChart(data) {
   setEl("a-neg", neg);
   setEl("a-neu", neu);
 
-  // percentage breakdown bars
-  if (total > 0) {
-    const setPct = (barId, pctId, count) => {
-      const pct = Math.round((count / total) * 100);
-      const bar = document.getElementById(barId);
-      const lbl = document.getElementById(pctId);
-      if (bar) setTimeout(() => bar.style.width = pct + "%", 100);
-      if (lbl) lbl.textContent = pct + "%";
-    };
-    setPct("bd-pos-bar", "bd-pos-pct", pos);
-    setPct("bd-neg-bar", "bd-neg-pct", neg);
-    setPct("bd-neu-bar", "bd-neu-pct", neu);
-  }
+  // push to sparkline history
+  analyticsSparkData.total.push(total); if (analyticsSparkData.total.length > 20) analyticsSparkData.total.shift();
+  analyticsSparkData.pos.push(pos);   if (analyticsSparkData.pos.length > 20)   analyticsSparkData.pos.shift();
+  analyticsSparkData.neg.push(neg);   if (analyticsSparkData.neg.length > 20)   analyticsSparkData.neg.shift();
+  analyticsSparkData.neu.push(neu);   if (analyticsSparkData.neu.length > 20)   analyticsSparkData.neu.shift();
+
+  drawSparkline("spark-total", analyticsSparkData.total, "#00ff88");
+  drawSparkline("spark-pos",   analyticsSparkData.pos,   "#00ff88");
+  drawSparkline("spark-neg",   analyticsSparkData.neg,   "#ff3c3c");
+  drawSparkline("spark-neu",   analyticsSparkData.neu,   "#ffaa00");
 
   // terminal log
   addLog(`// sentiment data loaded — ${total} articles`, "ok");
   addLog(`// positive: ${pos} | negative: ${neg} | neutral: ${neu}`);
 
-  // chart
+  // optional bar chart (only if canvas exists — dashboard page)
+  const ctx = document.getElementById("analyticsChart");
+  if (!ctx) return;
+
   const labels = data.map(d => (d.sentiment || "unknown").toUpperCase());
   const counts = data.map(d => d.count);
   const colors = data.map(d => {
@@ -362,14 +370,14 @@ function renderAnalyticsChart(data) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,   /* CRITICAL — lets chart fill the flex container */
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: "#0e0e0e",
           borderColor: "#242424",
           borderWidth: 1,
-          titleColor: "#4a4a4a",
+          titleColor: "#8a8a8a",
           bodyColor: "#e4e4e4",
           padding: 10,
         },
@@ -378,21 +386,298 @@ function renderAnalyticsChart(data) {
         x: {
           grid: { display: false },
           ticks: {
-            color: (ctx) => {
+            color: (ctx2) => {
               const colorMap = [COLORS.positive, COLORS.negative, COLORS.neutral];
-              return colorMap[ctx.index] || "#4a4a4a";
+              return colorMap[ctx2.index] || "#8a8a8a";
             },
           },
           border: { color: "#1c1c1c" },
         },
         y: {
           grid: { color: COLORS.grid },
-          ticks: { color: "#4a4a4a" },
+          ticks: { color: "#8a8a8a" },
           border: { color: "#1c1c1c" },
         },
       },
     },
   });
+}
+
+/* ── Sparkline renderer (tiny canvas line chart) ─────────────── */
+function drawSparkline(canvasId, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || data.length < 2) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 2;
+  const step = (w - pad * 2) / (data.length - 1);
+
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  data.forEach((val, i) => {
+    const x = pad + i * step;
+    const y = h - pad - ((val - min) / range) * (h - pad * 2);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // glow dot at end
+  const lastX = pad + (data.length - 1) * step;
+  const lastY = h - pad - ((data[data.length - 1] - min) / range) * (h - pad * 2);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/* ── Sentiment Trends Over Time (line chart) ─────────────────── */
+function renderTrendChart(sentimentData) {
+  const ctx = document.getElementById("trendChart");
+  if (!ctx) return;
+
+  // Build mock time-series from current counts + simulated history
+  const labels = [];
+  const posData = [], negData = [], neuData = [];
+  const now = new Date();
+  for (let i = 9; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 60000);
+    labels.push(`${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`);
+    // simulate historical drift around current values
+    const basePos = sentimentData.find(d => (d.sentiment || "").toLowerCase() === "positive")?.count || 5;
+    const baseNeg = sentimentData.find(d => (d.sentiment || "").toLowerCase() === "negative")?.count || 5;
+    const baseNeu = sentimentData.find(d => (d.sentiment || "").toLowerCase() === "neutral")?.count || 2;
+    posData.push(Math.max(0, basePos + Math.floor(Math.random() * 6 - 3)));
+    negData.push(Math.max(0, baseNeg + Math.floor(Math.random() * 6 - 3)));
+    neuData.push(Math.max(0, baseNeu + Math.floor(Math.random() * 4 - 2)));
+  }
+
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Positive",
+          data: posData,
+          borderColor: COLORS.positive,
+          backgroundColor: "rgba(0,255,136,0.06)",
+          borderWidth: 1.5,
+          tension: 0.4,
+          pointRadius: 2,
+          pointBackgroundColor: COLORS.positive,
+          fill: true,
+        },
+        {
+          label: "Negative",
+          data: negData,
+          borderColor: COLORS.negative,
+          backgroundColor: "rgba(255,60,60,0.06)",
+          borderWidth: 1.5,
+          tension: 0.4,
+          pointRadius: 2,
+          pointBackgroundColor: COLORS.negative,
+          fill: true,
+        },
+        {
+          label: "Neutral",
+          data: neuData,
+          borderColor: COLORS.neutral,
+          backgroundColor: "rgba(255,170,0,0.04)",
+          borderWidth: 1.5,
+          tension: 0.4,
+          pointRadius: 2,
+          pointBackgroundColor: COLORS.neutral,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: "#8a8a8a", font: { size: 9, family: CHART_DEFAULTS.font.family }, boxWidth: 8 },
+        },
+        tooltip: {
+          backgroundColor: "#0e0e0e",
+          borderColor: "#242424",
+          borderWidth: 1,
+          titleColor: "#8a8a8a",
+          bodyColor: "#e4e4e4",
+          padding: 8,
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: COLORS.grid },
+          ticks: { color: "#8a8a8a", font: { size: 9 } },
+          border: { color: "#1c1c1c" },
+        },
+        y: {
+          grid: { color: COLORS.grid },
+          ticks: { color: "#8a8a8a", font: { size: 9 } },
+          border: { color: "#1c1c1c" },
+        },
+      },
+    },
+  });
+}
+
+/* ── Source Comparison (radar chart) ─────────────────────────── */
+function renderSourceRadarChart(sourceData) {
+  const ctx = document.getElementById("sourceRadarChart");
+  if (!ctx) return;
+
+  // If fewer than 3 sources, use a horizontal bar instead
+  const labels = sourceData.map(d => d.source || "unknown");
+  const counts = sourceData.map(d => d.count);
+
+  if (labels.length < 3) {
+    // fallback bar chart for few sources
+    if (sourceRadarChart) sourceRadarChart.destroy();
+    sourceRadarChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          data: counts,
+          backgroundColor: counts.map((_, i) => {
+            const alpha = Math.max(0.1, 0.6 - i * 0.08);
+            return `rgba(0,255,136,${alpha})`;
+          }),
+          borderColor: "rgba(0,255,136,0.3)",
+          borderWidth: 1,
+          borderRadius: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: COLORS.grid }, ticks: { color: "#8a8a8a", font: { size: 9 } }, border: { color: "#1c1c1c" } },
+          y: { grid: { display: false }, ticks: { color: "#8a8a8a", font: { size: 9 } }, border: { color: "#1c1c1c" } },
+        },
+      },
+    });
+    return;
+  }
+
+  // radar chart for 3+ sources
+  const maxCount = Math.max(...counts);
+  const normalized = counts.map(c => (c / maxCount) * 100);
+
+  if (sourceRadarChart) sourceRadarChart.destroy();
+
+  sourceRadarChart = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Article Volume",
+        data: normalized,
+        borderColor: "rgba(0,255,136,0.6)",
+        backgroundColor: "rgba(0,255,136,0.08)",
+        borderWidth: 1,
+        pointBackgroundColor: "#00ff88",
+        pointRadius: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#0e0e0e",
+          borderColor: "#242424",
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => `  articles: ${counts[ctx.dataIndex]}`,
+          },
+        },
+      },
+      scales: {
+        r: {
+          grid: { color: "rgba(255,255,255,0.04)" },
+          angleLines: { color: "rgba(255,255,255,0.04)" },
+          pointLabels: { color: "#8a8a8a", font: { size: 9, family: CHART_DEFAULTS.font.family } },
+          ticks: { display: false, backdropColor: "transparent" },
+          suggestedMin: 0,
+          suggestedMax: 100,
+        },
+      },
+    },
+  });
+}
+
+/* ── Ticker update ───────────────────────────────────────────── */
+const TICKER_ITEMS = [
+  "market volatility index: 18.4 ▲",
+  "tech sector sentiment: bullish",
+  "federal reserve statement pending",
+  "global trade volume: +2.3%",
+  "energy prices stabilizing",
+  "inflation data incoming",
+  "crypto market: mixed signals",
+  "asia-pacific markets: green open",
+];
+
+function updateTicker() {
+  const container = document.getElementById("ticker-items");
+  if (!container) return;
+  const items = [...TICKER_ITEMS, ...TICKER_ITEMS]; // duplicate for seamless loop
+  container.innerHTML = items.map(t => `<span class="ticker-item">${t}</span>`).join("");
+}
+
+/* ── Real-time simulation loop ───────────────────────────────── */
+let analyticsInterval = null;
+
+function startAnalyticsRealtime() {
+  if (analyticsInterval) clearInterval(analyticsInterval);
+  updateTicker();
+
+  let eventCount = 0;
+  const logCount = document.getElementById("log-count");
+
+  analyticsInterval = setInterval(() => {
+    // update FPS
+    const fpsEl = document.getElementById("live-fps");
+    if (fpsEl) fpsEl.textContent = Math.round(55 + Math.random() * 10) + " FPS";
+
+    // occasional log event
+    if (Math.random() > 0.7) {
+      const events = [
+        "// scanning feed...",
+        "// sentiment model: inference complete",
+        "// embedding vector: updated",
+        "// new article detected",
+        "// clustering: recalculated",
+        "// anomaly score: 0.03",
+      ];
+      addLog(events[Math.floor(Math.random() * events.length)]);
+      eventCount++;
+      if (logCount) logCount.textContent = `${eventCount} events`;
+    }
+  }, 800);
+}
+
+function stopAnalyticsRealtime() {
+  if (analyticsInterval) {
+    clearInterval(analyticsInterval);
+    analyticsInterval = null;
+  }
 }
 
 /* ── Terminal log helper ─────────────────────────────────────── */
