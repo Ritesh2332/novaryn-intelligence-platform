@@ -174,69 +174,115 @@
 
     <!-- ══ ANALYTICS SECTION ══════════════════════════ -->
     <div id="analytics-section" class="content-section analytics-fullpage">
-      <h2>Advanced Analytics</h2>
+      <div class="analytics-header-row">
+        <h2>Advanced Analytics</h2>
+        <div class="live-badge">
+          <span class="status-dot"></span>
+          <span>LIVE</span>
+          <span class="fps" id="fps-counter">60 FPS</span>
+        </div>
+      </div>
 
       <!-- top stat strip -->
       <div class="analytics-stat-strip" id="analytics-stats-strip">
         <div class="a-stat">
-          <span class="a-stat-label">// total</span>
+          <span class="a-stat-label">// total_articles</span>
           <span class="a-stat-val" id="a-total">—</span>
+          <div class="a-stat-bar"><div class="a-stat-bar-fill" id="a-total-bar"></div></div>
         </div>
         <div class="a-stat positive">
-          <span class="a-stat-label">// positive</span>
+          <span class="a-stat-label">// positive_sentiment</span>
           <span class="a-stat-val" id="a-pos">—</span>
+          <div class="a-stat-bar"><div class="a-stat-bar-fill" id="a-pos-bar"></div></div>
         </div>
         <div class="a-stat negative">
-          <span class="a-stat-label">// negative</span>
+          <span class="a-stat-label">// negative_sentiment</span>
           <span class="a-stat-val" id="a-neg">—</span>
+          <div class="a-stat-bar"><div class="a-stat-bar-fill" id="a-neg-bar"></div></div>
         </div>
         <div class="a-stat neutral">
-          <span class="a-stat-label">// neutral</span>
+          <span class="a-stat-label">// neutral_sentiment</span>
           <span class="a-stat-val" id="a-neu">—</span>
+          <div class="a-stat-bar"><div class="a-stat-bar-fill" id="a-neu-bar"></div></div>
         </div>
       </div>
 
       <!-- chart row -->
-      <div class="analytics-chart-row">
+      <div class="analytics-charts-row">
 
-        <div class="analytics-panel">
+        <div class="analytics-panel analytics-panel-wide">
           <div class="analytics-panel-header">
-            <span class="panel-dot"></span>Sentiment Distribution
+            <span class="panel-dot"></span>
+            <span>Sentiment Trends Over Time</span>
+            <span class="panel-badge">REAL-TIME</span>
           </div>
           <div class="chart-wrap">
             <canvas id="analyticsChart"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Positive</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Negative</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Neutral</span>
           </div>
         </div>
 
         <div class="analytics-panel analytics-panel-narrow">
           <div class="analytics-panel-header">
-            <span class="panel-dot"></span>Breakdown
+            <span class="panel-dot"></span>
+            <span>Source Comparison</span>
           </div>
-          <div class="analytics-breakdown" id="analytics-breakdown">
-            <div class="breakdown-row">
-              <span class="bd-label positive-text">POSITIVE</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-pos-bar" style="background:var(--green);width:0%"></div></div>
-              <span class="bd-pct" id="bd-pos-pct">0%</span>
-            </div>
-            <div class="breakdown-row">
-              <span class="bd-label negative-text">NEGATIVE</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-neg-bar" style="background:var(--red);width:0%"></div></div>
-              <span class="bd-pct" id="bd-neg-pct">0%</span>
-            </div>
-            <div class="breakdown-row">
-              <span class="bd-label neutral-text">NEUTRAL</span>
-              <div class="bd-bar-track"><div class="bd-bar" id="bd-neu-bar" style="background:var(--amber);width:0%"></div></div>
-              <span class="bd-pct" id="bd-neu-pct">0%</span>
-            </div>
-
-            <div class="analytics-log" id="analytics-log">
-              <div class="log-line"><span class="log-time">00:00:00</span><span class="log-msg">// awaiting data feed...</span></div>
-            </div>
-
+          <div class="chart-wrap">
+            <canvas id="sourceRadarChart"></canvas>
           </div>
         </div>
 
       </div>
+
+      <!-- info row -->
+      <div class="analytics-info-row">
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>
+            <span>Word Frequency Analysis</span>
+          </div>
+          <div class="word-freq-container" id="wordFreqContainer">
+            <div class="word-cloud" id="wordCloud"></div>
+          </div>
+        </div>
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>
+            <span>Entity Extraction</span>
+          </div>
+          <div class="entity-list" id="entityList"></div>
+        </div>
+
+        <div class="analytics-panel">
+          <div class="analytics-panel-header">
+            <span class="panel-dot"></span>
+            <span>Processing Log</span>
+            <span class="log-count" id="logCount">0 events</span>
+          </div>
+          <div class="analytics-log" id="analytics-log">
+            <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg">// awaiting data feed...</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- live ticker -->
+      <div class="live-ticker">
+        <div class="ticker-label">
+          <span class="status-dot"></span>
+          <span>// LIVE_FEED >></span>
+        </div>
+        <div class="ticker-track">
+          <div class="ticker-content" id="tickerContent"></div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ══ NEWS FEED SECTION ══════════════════════════ -->
