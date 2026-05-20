@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+sentence-transformers
+chromadb
+newsapi-python
+gnews
+groq
+scikit-learn
+nltk
+spacy

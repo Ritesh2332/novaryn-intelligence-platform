@@ -51,3 +51,30 @@ build/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Docker Compose Overrides
+docker-compose.override.yml
+
+# Python cache
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Mac/Linux temp
+*.swp
+
+# Chroma persistence
+chromadb_data/
+
+# Sentence Transformers cache
+.cache/
+huggingface/
+
+# Environment configs
+.env.local
+.env.production
+
+# Runtime files
+*.pid
