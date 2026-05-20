@@ -1,10 +1,9 @@
-version: "3.9"
-
 services:
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: novaryn_backend
     ports:
       - "8000:8000"
@@ -13,11 +12,12 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./chromadb:/app/chromadb
+      - ./chromadb_data:/app/chromadb_data
 
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: novaryn_frontend
     ports:
       - "5000:5000"
