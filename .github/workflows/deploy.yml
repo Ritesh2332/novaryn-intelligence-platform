@@ -1,68 +1,24 @@
-name: Deploy to Production
+name: Deploy Pipeline
 
 on:
-  workflow_run:
-    workflows: ["Docker Build and Deploy"]
-    types:
-      - completed
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+
+  deploy-check:
+
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to AWS EC2
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.AWS_EC2_HOST }}
-        username: ${{ secrets.AWS_EC2_USER }}
-        key: ${{ secrets.AWS_EC2_SSH_KEY }}
-        script: |
-          cd /opt/novaryn-platform
-          
-          # Backup current deployment
-          docker-compose down
-          docker tag novaryn-backend:latest novaryn-backend:backup-$(date +%Y%m%d-%H%M%S)
-          docker tag novaryn-frontend:latest novaryn-frontend:backup-$(date +%Y%m%d-%H%M%S)
-          
-          # Pull latest images
-          docker-compose pull
-          
-          # Start services
-          docker-compose up -d
-          
-          # Wait for services to start
-          sleep 30
-          
-          # Health checks
-          curl -f http://localhost:8000/health || exit 1
-          curl -f http://localhost:5000/ || exit 1
-          
-          # Cleanup old images
-          docker image prune -f
-          
-          echo "Deployment completed successfully!"
-    
-    - name: Notify Slack
-      if: success()
-      uses: 8398a7/action-slack@v3
-      with:
-        status: success
-        channel: '#deployments'
-        text: '✅ Novaryn AI Platform deployed successfully!'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    
-    - name: Notify Slack on Failure
-      if: failure()
-      uses: 8398a7/action-slack@v3
-      with:
-        status: failure
-        channel: '#deployments'
-        text: '❌ Novaryn AI Platform deployment failed!'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker Compose
+        run: docker compose config
+
+      - name: Build Containers
+        run: docker compose build
+
+      - name: Deployment Ready
+        run: echo "Novaryn deployment pipeline is ready."

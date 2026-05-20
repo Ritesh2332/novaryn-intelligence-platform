@@ -36,8 +36,5 @@ jobs:
           cd frontend
           pip install -r requirements.txt
 
-      - name: Validate Docker Compose
-        run: docker compose config
-
       - name: Build Docker Containers
         run: docker compose build
