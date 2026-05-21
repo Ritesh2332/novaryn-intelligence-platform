@@ -11,6 +11,9 @@ services:
       - .env
     depends_on:
       - postgres
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - ./chromadb_data:/app/chromadb_data
 
@@ -30,7 +33,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: postgres@22
       POSTGRES_DB: novaryn_db
     ports:
       - "5432:5432"
