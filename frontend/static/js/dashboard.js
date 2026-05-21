@@ -726,10 +726,12 @@ async function askAIDashboard() {
   const responseDiv = document.getElementById("aiResponse");
   responseDiv.innerHTML = `<span style="color:var(--green)">// processing query...</span>`;
 
-  try {
-    const res  = await fetch(`${API_BASE}/rag/ask?query=${encodeURIComponent(question)}`);
-    const data = await res.json();
+  async function doAsk() {
+    const res = await fetch(`${API_BASE}/rag/ask?query=${encodeURIComponent(question)}`);
+    return res.json();
+  }
 
+  function renderAnswer(data) {
     responseDiv.innerHTML = `
       <div class="ai-response-content">
         <h3><i class="fas fa-robot"></i>&nbsp; AI Response</h3>
@@ -739,7 +741,19 @@ async function askAIDashboard() {
           <p>${data.sources_used || "none"}</p>
         </div>
       </div>`;
+  }
 
+  try {
+    let data = await doAsk();
+
+    if (data.answer && data.answer.includes("No relevant articles found")) {
+      responseDiv.innerHTML = `<span style="color:var(--green)">// generating embeddings...</span>`;
+      const embRes = await fetch(`${API_BASE}/rag/generate-embeddings`, { method: "POST" });
+      if (!embRes.ok) throw new Error("embedding generation failed");
+      data = await doAsk();
+    }
+
+    renderAnswer(data);
   } catch {
     responseDiv.innerHTML = `<span style="color:var(--red)">// error: failed to get AI response</span>`;
   }
@@ -757,17 +771,31 @@ async function askAI() {
   responseDiv.style.display = "block";
   responseDiv.innerHTML = `<span style="color:var(--green)">// processing...</span>`;
 
-  try {
-    const res  = await fetch(`${API_BASE}/rag/ask?query=${encodeURIComponent(question)}`);
+  async function doAsk() {
+    const res = await fetch(`${API_BASE}/rag/ask?query=${encodeURIComponent(question)}`);
     if (!res.ok) throw new Error("request failed");
-    const data = await res.json();
+    return res.json();
+  }
 
+  function renderAnswer(data) {
     responseDiv.innerHTML = `
       <h3><i class="fas fa-terminal"></i>&nbsp; Output</h3>
       <p>${data.answer || "No answer returned."}</p>
       <strong>// sources_used:</strong>
       <p>${data.sources_used || "none"}</p>`;
+  }
 
+  try {
+    let data = await doAsk();
+
+    if (data.answer && data.answer.includes("No relevant articles found")) {
+      responseDiv.innerHTML = `<span style="color:var(--green)">// generating embeddings...</span>`;
+      const embRes = await fetch(`${API_BASE}/rag/generate-embeddings`, { method: "POST" });
+      if (!embRes.ok) throw new Error("embedding generation failed");
+      data = await doAsk();
+    }
+
+    renderAnswer(data);
     showNotification("// response generated");
 
   } catch {
