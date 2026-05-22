@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "postgresql://postgres:postgres%4022@localhost:5432/novaryn_db"
+DATABASE_URL = "postgresql://postgres:postgres%4022@postgres:5432/novaryn_db"
 
 engine = create_engine(DATABASE_URL)
 
