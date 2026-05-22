@@ -3,6 +3,11 @@ pipeline {
 
     environment {
         DOCKER_BUILDKIT = '1'
+
+        NEWS_API_KEY = credentials('news-api-key')
+        GROQ_API_KEY = credentials('groq-api-key')
+        GNEWS_API_KEY = credentials('gnews-api-key')
+        HF_TOKEN = credentials('hf-token')
     }
 
     stages {
@@ -11,6 +16,19 @@ pipeline {
             steps {
                 sh 'docker --version'
                 sh 'docker-compose version'
+            }
+        }
+
+        stage('Create Env File') {
+            steps {
+                writeFile file: '.env', text: """
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novaryn_db
+
+NEWS_API_KEY=${NEWS_API_KEY}
+GROQ_API_KEY=${GROQ_API_KEY}
+GNEWS_API_KEY=${GNEWS_API_KEY}
+HF_TOKEN=${HF_TOKEN}
+"""
             }
         }
 
@@ -24,7 +42,7 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                sh 'sleep 10'
+                sh 'sleep 15'
                 sh 'curl -f http://localhost:8000/docs'
                 sh 'curl -f http://localhost:5000'
             }
