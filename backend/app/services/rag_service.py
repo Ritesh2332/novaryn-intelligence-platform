@@ -5,7 +5,15 @@ from backend.app.services.chromadb_service import collection
 
 import os
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+_model = None
+
+
+def _get_model():
+    global _model
+    if _model is None:
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
+
 
 client = Groq(
     api_key=os.getenv("GROQ_API_KEY")
@@ -13,8 +21,7 @@ client = Groq(
 
 
 def generate_rag_answer(query: str):
-
-    query_embedding = model.encode(query).tolist()
+    query_embedding = _get_model().encode(query).tolist()
 
     results = collection.query(
         query_embeddings=[query_embedding],

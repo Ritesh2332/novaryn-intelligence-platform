@@ -22,7 +22,7 @@ pipeline {
         stage('Create Env File') {
             steps {
                 writeFile file: '.env', text: """
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novaryn_db
+DATABASE_URL=postgresql://postgres:postgres%40%4022@postgres:5432/novaryn_db
 
 NEWS_API_KEY=${NEWS_API_KEY}
 GROQ_API_KEY=${GROQ_API_KEY}
@@ -42,9 +42,20 @@ HF_TOKEN=${HF_TOKEN}
 
         stage('Health Check') {
             steps {
-                sh 'sleep 20'
-                sh 'curl -f http://host.docker.internal:8000/docs'
-                sh 'curl -f http://host.docker.internal:5000'
+                sh '''
+for i in 1 2 3 4 5 6; do
+  curl -f http://localhost:8000/docs && break
+  echo "Backend not ready, retrying in 15s... ($i/6)"
+  sleep 15
+done
+'''
+                sh '''
+for i in 1 2 3; do
+  curl -f http://localhost:5000 && break
+  echo "Frontend not ready, retrying in 10s... ($i/3)"
+  sleep 10
+done
+'''
             }
         }
     }

@@ -4,12 +4,18 @@ from sqlalchemy.orm import Session
 from backend.app.models.news_model import NewsArticle
 from backend.app.services.chromadb_service import collection
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+_model = None
+
+
+def _get_model():
+    global _model
+    if _model is None:
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
 
 
 def generate_embedding(text: str):
-
-    return model.encode(text).tolist()
+    return _get_model().encode(text).tolist()
 
 
 def store_article_embeddings(db: Session):
