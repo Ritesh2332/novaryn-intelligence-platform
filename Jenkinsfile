@@ -56,7 +56,7 @@ HF_TOKEN=${HF_TOKEN}
         }
 
         cleanup {
-            sh 'docker-compose down --volumes --remove-orphans || true'
+            sh 'echo "Skipping cleanup for debugging"'
         }
     }
 }
