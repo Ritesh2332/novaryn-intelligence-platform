@@ -43,8 +43,8 @@ HF_TOKEN=${HF_TOKEN}
         stage('Health Check') {
             steps {
                 sh 'sleep 20'
-                sh 'curl -f http://localhost:8000/docs'
-                sh 'curl -f http://localhost:5000'
+                sh 'curl -f http://novaryn_backend:8000/docs'
+                sh 'curl -f http://novaryn_frontend:5000'
             }
         }
     }
