@@ -8,7 +8,7 @@ class NewsArticle(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    title = Column(String, nullable=False)
+    title = Column(String, nullable=True)
 
     source = Column(String)
 
