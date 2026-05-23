@@ -14,7 +14,9 @@ pipeline {
         stage('Verify Environment') {
             steps {
                 sh 'python3 --version'
-                sh 'python3 -m venv venv'
+                sh 'python3 -m venv --without-pip venv'
+                sh 'curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py'
+                sh './venv/bin/python get-pip.py'
                 sh './venv/bin/python --version'
                 sh './venv/bin/pip --version'
             }
