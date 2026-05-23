@@ -116,8 +116,8 @@ kill $BACKEND_PID || true
                     docker compose down || true
                     docker compose pull
                     docker compose up -d
-                    sleep 15
-                    curl -f http://localhost:8000/ || exit 1
+                    sleep 30
+                    curl -f http://host.docker.internal:8000/ || exit 1
                 '''
             }
         }
