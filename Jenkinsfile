@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
     environment {
         PATH          = "$HOME/.local/bin:$PATH"
         DATABASE_URL  = "sqlite:///./test.db"
@@ -82,12 +87,37 @@ kill $BACKEND_PID || true
 '''
             }
         }
+
+        stage('Build Docker Images') {
+            steps {
+                sh 'docker compose build'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag novaryn-ci-cd-backend:latest "$DOCKER_USER"/novaryn-backend:latest
+                        docker tag novaryn-ci-cd-frontend:latest "$DOCKER_USER"/novaryn-frontend:latest
+                        docker push "$DOCKER_USER"/novaryn-backend:latest
+                        docker push "$DOCKER_USER"/novaryn-frontend:latest
+                    '''
+                }
+            }
+        }
     }
 
     post {
         always {
             sh 'rm -f test.db'
             sh 'pkill -f uvicorn || true'
+            sh 'docker logout || true'
         }
     }
 }
