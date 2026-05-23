@@ -1,4 +1,3 @@
-from sentence_transformers import SentenceTransformer
 from sqlalchemy.orm import Session
 
 from backend.app.models.news_model import NewsArticle
@@ -10,6 +9,7 @@ _model = None
 def _get_model():
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
         _model = SentenceTransformer("all-MiniLM-L6-v2")
     return _model
 

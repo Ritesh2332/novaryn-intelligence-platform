@@ -11,3 +11,5 @@ groq
 scikit-learn
 nltk
 spacy
+pytest
+httpx

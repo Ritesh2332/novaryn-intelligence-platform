@@ -1,11 +1,10 @@
-from transformers import pipeline
-
 _classifier = None
 
 
 def _get_classifier():
     global _classifier
     if _classifier is None:
+        from transformers import pipeline
         _classifier = pipeline(
             "sentiment-analysis",
             model="distilbert-base-uncased-finetuned-sst-2-english"

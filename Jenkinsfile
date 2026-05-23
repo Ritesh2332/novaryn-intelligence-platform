@@ -57,6 +57,12 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+            steps {
+                sh './venv/bin/pytest backend/tests -v --tb=short'
+            }
+        }
+
         stage('Smoke Test') {
             steps {
                 sh '''

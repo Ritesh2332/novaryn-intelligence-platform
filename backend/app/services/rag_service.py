@@ -1,23 +1,25 @@
-from sentence_transformers import SentenceTransformer
-from groq import Groq
-
 from backend.app.services.chromadb_service import collection
 
 import os
 
 _model = None
+_client = None
 
 
 def _get_model():
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
         _model = SentenceTransformer("all-MiniLM-L6-v2")
     return _model
 
 
-client = Groq(
-    api_key=os.getenv("GROQ_API_KEY")
-)
+def _get_groq_client():
+    global _client
+    if _client is None:
+        from groq import Groq
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    return _client
 
 
 def generate_rag_answer(query: str):
@@ -52,7 +54,7 @@ def generate_rag_answer(query: str):
     {query}
     """
 
-    completion = client.chat.completions.create(
+    completion = _get_groq_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {
