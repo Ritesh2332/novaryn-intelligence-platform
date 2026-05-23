@@ -12,8 +12,8 @@ pipeline {
 
         stage('Verify Environment') {
             steps {
-                sh 'python3 --version || python --version'
-                sh 'pip3 --version || pip --version'
+                sh 'python3 --version'
+                sh 'python3 -m pip --version'
             }
         }
 
@@ -32,10 +32,10 @@ HF_TOKEN=${HF_TOKEN}
         stage('Install Backend Dependencies') {
             steps {
                 sh '''
-python3 -m venv venv || python -m venv venv
+python3 -m venv venv
 . venv/bin/activate
-pip install --upgrade pip
-pip install -r backend/requirements.txt
+python3 -m pip install --upgrade pip
+python3 -m pip install -r backend/requirements.txt
 '''
             }
         }
@@ -44,7 +44,7 @@ pip install -r backend/requirements.txt
             steps {
                 sh '''
 . venv/bin/activate
-pip install -r frontend/requirements.txt
+python3 -m pip install -r frontend/requirements.txt
 '''
             }
         }
@@ -53,7 +53,7 @@ pip install -r frontend/requirements.txt
             steps {
                 sh '''
 . venv/bin/activate
-python -c "from backend.app.main import app; print('Backend imports OK')"
+python3 -c "from backend.app.main import app; print('Backend imports OK')"
 '''
             }
         }
@@ -62,7 +62,7 @@ python -c "from backend.app.main import app; print('Backend imports OK')"
             steps {
                 sh '''
 . venv/bin/activate
-python -c "import sys; sys.path.insert(0, 'frontend'); from app import app; print('Frontend imports OK')"
+python3 -c "import sys; sys.path.insert(0, 'frontend'); from app import app; print('Frontend imports OK')"
 '''
             }
         }
