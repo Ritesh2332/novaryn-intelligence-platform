@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PATH = "$HOME/.local/bin:$PATH"
+        PATH          = "$HOME/.local/bin:$PATH"
+        DATABASE_URL  = "sqlite:///./test.db"
         NEWS_API_KEY  = credentials('NEWS_API_KEY')
         GROQ_API_KEY  = credentials('GROQ_API_KEY')
         GNEWS_API_KEY = credentials('GNEWS_API_KEY')
@@ -19,18 +20,6 @@ pipeline {
                 sh './venv/bin/python get-pip.py'
                 sh './venv/bin/python --version'
                 sh './venv/bin/pip --version'
-            }
-        }
-
-        stage('Create Env File') {
-            steps {
-                writeFile file: '.env', text: """
-DATABASE_URL=sqlite:///./test.db
-NEWS_API_KEY=${NEWS_API_KEY}
-GROQ_API_KEY=${GROQ_API_KEY}
-GNEWS_API_KEY=${GNEWS_API_KEY}
-HF_TOKEN=${HF_TOKEN}
-"""
             }
         }
 
