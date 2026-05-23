@@ -5,7 +5,6 @@ pipeline {
         timeout(time: 30, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
-
     environment {
         PATH          = "$HOME/.local/bin:$PATH"
         DATABASE_URL  = "sqlite:///./test.db"
@@ -16,7 +15,6 @@ pipeline {
     }
 
     stages {
-
         stage('Verify Environment') {
             steps {
                 sh 'python3 --version'
@@ -109,6 +107,18 @@ kill $BACKEND_PID || true
                         docker push "$DOCKER_USER"/novaryn-frontend:latest
                     '''
                 }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker compose down || true
+                    docker compose pull
+                    docker compose up -d
+                    sleep 15
+                    curl -f http://localhost:8000/ || exit 1
+                '''
             }
         }
     }
