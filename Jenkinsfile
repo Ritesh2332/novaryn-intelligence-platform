@@ -13,6 +13,7 @@ pipeline {
         stage('Verify Environment') {
             steps {
                 sh 'python3 --version'
+                sh 'python3 -m ensurepip --upgrade'
                 sh 'python3 -m pip --version'
             }
         }
