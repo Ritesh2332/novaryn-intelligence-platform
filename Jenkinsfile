@@ -49,6 +49,13 @@ HF_TOKEN=${HF_TOKEN}
             }
         }
 
+        stage('Download ML Models & Data') {
+            steps {
+                sh './venv/bin/python -m spacy download en_core_web_sm'
+                sh './venv/bin/python -c "import nltk; nltk.download(\'punkt\'); nltk.download(\'stopwords\')"'
+            }
+        }
+
         stage('Verify Backend Imports') {
             steps {
                 sh './venv/bin/python -c "from backend.app.main import app; print(\'Backend imports OK\')"'
