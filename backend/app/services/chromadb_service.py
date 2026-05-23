@@ -17,10 +17,7 @@ def _get_collection():
     return _collection
 
 
-# Backward-compatible module-level access
 class _LazyCollection:
-    """Proxy that defers ChromaDB collection access until first use."""
-
     def __getattr__(self, name):
         return getattr(_get_collection(), name)
 

@@ -37,7 +37,6 @@ def fetch_and_store_news(db: Session):
     articles = []
     newsapi_error = None
 
-    # --- Try NewsAPI first ---
     try:
         newsapi = NewsApiClient(api_key=NEWS_API_KEY)
         response = newsapi.get_top_headlines(language="en", page_size=10)
@@ -50,7 +49,6 @@ def fetch_and_store_news(db: Session):
         newsapi_error = f"NewsAPI exception: {str(e)}"
         logger.warning(newsapi_error)
 
-    # --- Fallback to GNews ---
     if not articles:
         try:
             gnews_articles = fetch_gnews()
@@ -76,13 +74,11 @@ def fetch_and_store_news(db: Session):
             skipped += 1
             continue
 
-        # Skip duplicates
         existing = db.query(NewsArticle).filter(NewsArticle.url == url).first()
         if existing:
             skipped += 1
             continue
 
-        # Sentiment
         raw_content = _safe_get(raw, "content") or _safe_get(raw, "description") or ""
         processed = preprocess_text(raw_content)
         sentiment = analyze_sentiment(processed)
