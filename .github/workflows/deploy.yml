@@ -1,24 +1,16 @@
-name: Deploy Pipeline
+name: Deploy
 
 on:
   workflow_dispatch:
 
 jobs:
-
   deploy-check:
-
     runs-on: ubuntu-latest
-
     steps:
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Verify Docker Compose
         run: docker compose config
-
       - name: Build Containers
         run: docker compose build
-
       - name: Deployment Ready
-        run: echo "Novaryn deployment pipeline is ready."
+        run: echo "Ready"
