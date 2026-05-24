@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from backend.app.core.database import engine, Base
 from backend.app.models.news_model import NewsArticle
 from backend.app.api.routes.news import router as news_router
@@ -21,6 +23,13 @@ app.include_router(news_router)
 app.include_router(analytics_router)
 app.include_router(rag_router)
 
-@app.get("/")
-def home():
-    return {"message": "Novaryn Backend Running"}
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+    with open("frontend/templates/dashboard.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
