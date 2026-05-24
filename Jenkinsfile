@@ -87,12 +87,24 @@ kill $BACKEND_PID || true
         }
 
         stage('Build Docker Images') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'main'
+                }
+            }
             steps {
                 sh 'docker compose build'
             }
         }
 
         stage('Push to Docker Hub') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'main'
+                }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-hub-creds',
@@ -111,6 +123,12 @@ kill $BACKEND_PID || true
         }
 
         stage('Deploy') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'main'
+                }
+            }
             steps {
                 sh '''
                     docker compose down || true
