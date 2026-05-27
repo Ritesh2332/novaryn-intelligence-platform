@@ -1,17 +1,17 @@
 # Novaryn AI
 
-a project that got out of hand — news ingestion, sentiment analysis, RAG search, the whole thing.
+a project that got out of hand - news ingestion, sentiment analysis, RAG search, the whole thing.
 
 ---
 
 ## what it does
 
-- **pulls news in real-time** — hits NewsAPI and GNews, stores everything in postgres
-- **runs sentiment analysis** — distilbert under the hood, classifies each article on ingest
-- **semantic search** — MiniLM embeddings + ChromaDB so you can search by meaning, not just keywords
-- **ask it questions** — RAG pipeline with Groq LLM, answers are grounded in actual articles
-- **fully containerized** — `docker compose up --build` and you're running
-- **CI/CD wired up** — GitHub Actions → Jenkins → Docker, pushes deploy themselves
+- **pulls news in real-time** : hits NewsAPI and GNews, stores everything in postgres
+- **runs sentiment analysis** : distilbert under the hood, classifies each article on ingest
+- **semantic search** : MiniLM embeddings + ChromaDB so you can search by meaning, not just keywords
+- **ask it questions** : RAG pipeline with Groq LLM, answers are grounded in actual articles
+- **fully containerized** : `docker compose up --build` and you're running
+- **CI/CD wired up** : GitHub Actions → Jenkins → Docker, pushes deploy themselves
 
 ---
 
@@ -81,7 +81,7 @@ kubernetes, prometheus + grafana for metrics, redis caching, real-time streaming
 
 ## author
 
-Ritesh Kumar Paswan — [github](https://github.com/Ritesh2332) · [linkedin](https://linkedin.com/in/ritesh232)
+Ritesh Kumar Paswan, [github](https://github.com/Ritesh2332) · [linkedin](https://linkedin.com/in/ritesh232)
 
 
 
