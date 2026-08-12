@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Data
+data/raw/
+data/processed/
+data/embeddings/
+
+# ML Models
+ml_pipeline/models/
+ml_pipeline/artifacts/
+
+# ChromaDB
+chromadb/
+
+# Node Modules
+node_modules/
+
+# Build Files
+dist/
+build/
+
+# Database Files
+*.db
+
+# Docker
+*.tar
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Docker Compose Overrides
+docker-compose.override.yml
+
+# Python cache
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Mac/Linux temp
+*.swp
+
+# Chroma persistence
+chromadb_data/
+
+# Sentence Transformers cache
+.cache/
+huggingface/
+
+# Environment configs
+.env.local
+.env.production
+
+# Runtime files
+*.pid

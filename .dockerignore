@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+chromadb/
+chromadb_data/
+.ipynb_checkpoints/
+*.db
+*.sqlite3
+node_modules/
+.env

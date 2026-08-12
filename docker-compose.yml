@@ -1,0 +1,41 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: novaryn_app
+    ports:
+      - "8000:8000"
+      - "7860:7860"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    volumes:
+      - ./chromadb_data:/app/chromadb_data
+
+  postgres:
+    image: postgres:16
+    container_name: novaryn_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres@22
+      POSTGRES_DB: novaryn_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d novaryn_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
